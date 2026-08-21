@@ -1,0 +1,29 @@
+{
+  "name": "BTK SQL Lab",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/workspace",
+  "forwardPorts": [1433],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-mssql.mssql"
+      ],
+      "settings": {
+        "mssql.connections": [
+          {
+            "server": "localhost,1433",
+            "database": "master",
+            "authenticationType": "SqlLogin",
+            "user": "sa",
+            "password": "Btk_Lab_2026!",
+            "savePassword": true,
+            "profileName": "btk-lab",
+            "trustServerCertificate": true
+          }
+        ]
+      }
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/wait-for-sql.sh"
+}

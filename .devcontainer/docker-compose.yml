@@ -1,0 +1,22 @@
+services:
+  dev:
+    image: mcr.microsoft.com/devcontainers/base:ubuntu
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    network_mode: service:db
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      # NOT: Bu parola SADECE gecici Codespace icindeki lokal gelistirme
+      # veritabani icindir; disariya acik degildir, gercek bir sir degildir.
+      MSSQL_SA_PASSWORD: "Btk_Lab_2026!"
+      MSSQL_PID: "Developer"
+    volumes:
+      - mssql-data:/var/opt/mssql
+
+volumes:
+  mssql-data:
