@@ -1,0 +1,47 @@
+name: Quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sql-server-smoke:
+    name: SQL Server 2022 smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate shell scripts
+        run: bash -n .devcontainer/wait-for-sql.sh scripts/ci-sql-smoke.sh
+
+      - name: Start SQL Server and run quality gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          SA_PASSWORD="Ci_$(openssl rand -hex 12)!aA1"
+          echo "::add-mask::$SA_PASSWORD"
+
+          docker run --detach \
+            --name btk-sql-ci \
+            --env ACCEPT_EULA=Y \
+            --env MSSQL_PID=Developer \
+            --env MSSQL_SA_PASSWORD="$SA_PASSWORD" \
+            --volume "$GITHUB_WORKSPACE/sql:/workspace/sql:ro" \
+            mcr.microsoft.com/mssql/server:2022-latest
+
+          bash scripts/ci-sql-smoke.sh btk-sql-ci "$SA_PASSWORD"
+
+      - name: Print SQL Server logs on failure
+        if: failure()
+        run: docker logs btk-sql-ci 2>&1 || true

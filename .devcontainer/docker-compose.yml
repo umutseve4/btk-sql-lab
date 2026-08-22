@@ -5,16 +5,29 @@ services:
       - ..:/workspace:cached
     command: sleep infinity
     network_mode: service:db
+    environment:
+      # Must match the preconfigured VS Code connection profile.
+      MSSQL_SA_PASSWORD: "Btk_Lab_2026!"
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     restart: unless-stopped
     environment:
       ACCEPT_EULA: "Y"
-      # NOT: Bu parola SADECE gecici Codespace icindeki lokal gelistirme
-      # veritabani icindir; disariya acik degildir, gercek bir sir degildir.
+      # Disposable local-only credential; CI uses a separate random password.
       MSSQL_SA_PASSWORD: "Btk_Lab_2026!"
       MSSQL_PID: "Developer"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          SQLCMD=/opt/mssql-tools18/bin/sqlcmd;
+          [ -x "$$SQLCMD" ] || SQLCMD=/opt/mssql-tools/bin/sqlcmd;
+          "$$SQLCMD" -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 36
+      start_period: 10s
     volumes:
       - mssql-data:/var/opt/mssql
 
