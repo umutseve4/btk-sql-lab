@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Validate shell scripts
         run: bash -n .devcontainer/wait-for-sql.sh scripts/ci-sql-smoke.sh
