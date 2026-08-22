@@ -42,12 +42,12 @@ SECURITY.md                 Güvenlik bildirim süreci
 
 ## Güvenlik modeli
 
-`Btk_Lab_2026!`, yalnızca izole ve geçici Codespace veritabanı için belgelenmiş
-bir geliştirme parolasıdır. Gerçek sır değildir; ancak **başka hiçbir sistemde
-yeniden kullanılmamalı**, internete açık veya üretim SQL Server'ında
-kullanılmamalıdır. Gerekirse Codespace oluşturulmadan önce
-`MSSQL_SA_PASSWORD` ortam değişkeniyle geçersiz kılınabilir. CI her çalışmada
-yeni ve maskelenmiş bir parola üretir.
+`Btk_Lab_2026!`, yalnızca izole Codespace veritabanı için belgelenmiş ve sabit
+bir geliştirme parolasıdır. Hazır VS Code bağlantı profili, `dev` servisi ve
+SQL Server aynı değeri kullanır; böylece yapılandırma atomik kalır. Bu parola
+gerçek sır değildir; ancak **başka hiçbir sistemde yeniden kullanılmamalı**,
+internete açık veya üretim SQL Server'ında kullanılmamalıdır. CI, bu geliştirme
+kimliğini kullanmaz; her çalışmada yeni ve loglarda maskelenmiş bir parola üretir.
 
 Güvenlik açığı bildirmek için [SECURITY.md](SECURITY.md) dosyasını kullan.
 
