@@ -10,7 +10,7 @@ services:
       MSSQL_SA_PASSWORD: "Btk_Lab_2026!"
 
   db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:2025-latest
     restart: unless-stopped
     environment:
       ACCEPT_EULA: "Y"
