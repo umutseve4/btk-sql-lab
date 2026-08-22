@@ -1,31 +1,64 @@
 # btk-sql-lab
 
-BTK Akademi SQL kursu icin **GitHub Codespaces** uzerinde calisan SQL Server 2022 laboratuvari.
-Eski bir bilgisayardan (or. Windows 7) bile sadece tarayici ile kullanilir — lokal kurulum gerekmez.
+BTK Akademi SQL kursu için **GitHub Codespaces** üzerinde çalışan, gerçek
+SQL Server 2022 kullanan eğitim laboratuvarı. Yerel SQL Server kurulumu gerekmez;
+tarayıcıdan açılır ve otomatik bağlantı kontrolü yapar.
 
-## Kullanim (3 adim)
+## Hızlı başlangıç
 
-1. Bu repoda yesil **Code** butonu → **Codespaces** sekmesi → **Create codespace on main**.
-2. Ortam kurulumunun bitmesini bekle (ilk seferde ~3-5 dk). Terminalde `===== OTOMATIK KONTROL =====` altinda **PASS** gorunmeli.
-3. Terminale su komutu yapistirip calistir:
+1. Yeşil **Code** düğmesi → **Codespaces** → **Create codespace on main**.
+2. İlk kurulumun tamamlanmasını bekle (genellikle 3–5 dakika). Terminalde
+   `===== OTOMATIK KONTROL =====` altında `PASS` görünmelidir.
+3. Çalışma zamanını doğrula:
 
    ```bash
-   sqlcmd -S localhost -U sa -P 'Btk_Lab_2026!' -C -i sql/00_smoke_test.sql
+   sqlcmd -S localhost -U sa -P 'Btk_Lab_2026!' -C -b -V 16 \
+     -i sql/00_smoke_test.sql
    ```
 
-   `sql_server_surumu` satirinda *Microsoft SQL Server 2022* goruyorsan lab hazirdir.
+`BTK_SQL_SMOKE_OK` ve `btk` çıktıları görünüyorsa laboratuvar hazırdır.
+VS Code içindeki **SQL Server (mssql)** eklentisinde hazır `btk-lab` bağlantı
+profili de kullanılabilir.
 
-Alternatif: VS Code icindeki **SQL Server (mssql)** eklentisinde hazir `btk-lab` baglanti profili vardir — tikla, bagla, `.sql` dosyalarini oradan calistir.
+## Otomatik kalite kapısı
 
-## Yapi
+Her pull request ve `main` push'unda GitHub Actions:
 
+1. Shell betiklerinin sözdizimini doğrular.
+2. Gerçek `mcr.microsoft.com/mssql/server:2022-latest` container'ını başlatır.
+3. `sql/00_smoke_test.sql` dosyasını `-b -V 16` ile çalıştırır; SQL hataları işi düşürür.
+4. `btk` veritabanının oluştuğunu sorguyla doğrular.
+5. Yanlış parolanın reddedildiği failure-path testini çalıştırır.
+
+## Yapı
+
+```text
+.devcontainer/              Codespace ve SQL Server tanımı
+.github/workflows/          CI kalite kapısı
+scripts/ci-sql-smoke.sh     Container tabanlı runtime doğrulaması
+sql/                        Ders SQL dosyaları
+SECURITY.md                 Güvenlik bildirim süreci
 ```
-.devcontainer/   Codespace tanimi (Ubuntu dev + SQL Server 2022 container)
-sql/             Kurs boyunca yazilan SQL dosyalari (ders basina bir dosya onerilir)
-```
 
-## Notlar
+## Güvenlik modeli
 
-- `sa` parolasi (`Btk_Lab_2026!`) **sadece gecici Codespace icindeki lokal veritabani** icindir; internete acik degildir ve sir sayilmaz.
-- Codespaces ucretsiz kota: kisisel hesaplarda ayda 120 cekirdek-saat (2 cekirdekli makinede ~60 saat). Isin bitince Codespace'i **Stop** et.
-- Veriler `mssql-data` volume'unda tutulur; Codespace durdurulup acilinca kaybolmaz, ancak Codespace **silinirse** kaybolur.
+`Btk_Lab_2026!`, yalnızca izole ve geçici Codespace veritabanı için belgelenmiş
+bir geliştirme parolasıdır. Gerçek sır değildir; ancak **başka hiçbir sistemde
+yeniden kullanılmamalı**, internete açık veya üretim SQL Server'ında
+kullanılmamalıdır. Gerekirse Codespace oluşturulmadan önce
+`MSSQL_SA_PASSWORD` ortam değişkeniyle geçersiz kılınabilir. CI her çalışmada
+yeni ve maskelenmiş bir parola üretir.
+
+Güvenlik açığı bildirmek için [SECURITY.md](SECURITY.md) dosyasını kullan.
+
+## Veri kalıcılığı ve maliyet
+
+- Veriler `mssql-data` volume'unda tutulur. Codespace durdurulup açıldığında
+  korunur; Codespace silindiğinde kaybolur.
+- Codespaces kotası ve fiyatlandırması değişebilir. Güncel limitleri
+  [GitHub Codespaces billing documentation](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-codespaces/about-billing-for-github-codespaces)
+  üzerinden doğrula ve işin bitince Codespace'i **Stop** et.
+
+## Lisans
+
+[MIT](LICENSE)
