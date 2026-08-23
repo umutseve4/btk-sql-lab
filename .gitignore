@@ -1,0 +1,38 @@
+# SQL Server data and backups.
+# These are the files that actually hurt: a .mdf or .bak committed once stays
+# in the pack file forever, even after a later `git rm`. Sizes here are in
+# hundreds of megabytes, and GitHub rejects pushes over 100 MB per file.
+*.mdf
+*.ldf
+*.ndf
+*.bak
+*.trn
+*.bacpac
+*.dacpac
+backups/
+data/
+
+# Secrets. The lab runs SQL Server with an SA password supplied through the
+# environment; nothing under this heading belongs in version control.
+.env
+.env.*
+!.env.example
+*.pfx
+*.key
+secrets.json
+appsettings.Development.json
+
+# Tooling output
+bin/
+obj/
+*.log
+*.tmp
+
+# Editors and OS
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
