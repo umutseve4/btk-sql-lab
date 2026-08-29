@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: quality-${{ github.ref }}
+  group: quality-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -20,7 +20,9 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: Validate shell scripts
         run: bash -n .devcontainer/wait-for-sql.sh scripts/ci-sql-smoke.sh
@@ -29,19 +31,27 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          readonly container_name="btk-sql-ci"
+
+          cleanup() {
+            local status=$?
+            if (( status != 0 )); then
+              docker logs "$container_name" 2>&1 || true
+            fi
+            docker rm --force "$container_name" >/dev/null 2>&1 || true
+            exit "$status"
+          }
+          trap cleanup EXIT
+
           SA_PASSWORD="Ci_$(openssl rand -hex 12)!aA1"
           echo "::add-mask::$SA_PASSWORD"
 
           docker run --detach \
-            --name btk-sql-ci \
+            --name "$container_name" \
             --env ACCEPT_EULA=Y \
             --env MSSQL_PID=Developer \
             --env MSSQL_SA_PASSWORD="$SA_PASSWORD" \
             --volume "$GITHUB_WORKSPACE/sql:/workspace/sql:ro" \
             mcr.microsoft.com/mssql/server:2022-latest
 
-          bash scripts/ci-sql-smoke.sh btk-sql-ci "$SA_PASSWORD"
-
-      - name: Print SQL Server logs on failure
-        if: failure()
-        run: docker logs btk-sql-ci 2>&1 || true
+          bash scripts/ci-sql-smoke.sh "$container_name" "$SA_PASSWORD"
